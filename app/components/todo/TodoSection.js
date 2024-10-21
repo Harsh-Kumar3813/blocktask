@@ -1,17 +1,25 @@
+import TodoItem from './TodoItem';
+import styles from '../../styles/Todo.module.css';
 
-import styles from '../../styles/Todo.module.css'
-import TodoList from './TodoList'
-
-const TodoSection = ({ title, todos, action }) => {
+const TodoSection = ({ title, todos, action, remove }) => {
     return (
-        <div className={styles.todoSection}>
-            <h1 className="title">
-                {title} - {todos.length}
-            </h1>
+        <section className={styles.todoSection}>
+            <h2>{title}</h2>
+            <ul>
+                {todos.map((todo) => (
+                    <TodoItem
+                        key={todo.account.idx}
+                        idx={todo.account.idx}
+                        content={todo.account.content}
+                        marked={todo.account.marked}
+                        dateline={todo.account.dateline}
+                        action={action}   // Mark/unmark functionality
+                        remove={remove}   // Removal functionality for both sections
+                    />
+                ))}
+            </ul>
+        </section>
+    );
+};
 
-            <TodoList todos={todos} action={action} />
-        </div>
-    )
-}
-
-export default TodoSection
+export default TodoSection;
