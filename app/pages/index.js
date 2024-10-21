@@ -1,53 +1,100 @@
-import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
-import { useTodo } from '../hooks/todo'
-import Loading from '../components/Loading'
-import TodoSection from '../components/todo/TodoSection'
-import styles from '../styles/Home.module.css'
-import { useEffect, useState } from 'react'
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
+import { useTodo } from '../hooks/todo';
+import Loading from '../components/Loading';
+import TodoSection from '../components/todo/TodoSection';
+import styles from '../styles/Home.module.css';
+import { useEffect, useState } from 'react';
+import { useWallet } from '@solana/wallet-adapter-react';
 
 const Home = () => {
-    const { initialized, initializeUser, loading, transactionPending, completedTodos, incompleteTodos, addTodo, markTodo, removeTodo, input, handleChange } = useTodo()
-    const [clientInitialized, setClientInitialized] = useState(false)
+    const { connected, publicKey } = useWallet();
+    const {
+        initialized,
+        initializeUser,
+        loading,
+        transactionPending,
+        todos,
+        input,
+        setInput,
+        addTodo,
+        markTodo,
+        removeTodo,
+    } = useTodo();
+
+    const [clientInitialized, setClientInitialized] = useState(false);
 
     useEffect(() => {
-        // Setting client initialized to true after first render
-        setClientInitialized(true)
-    }, [])
+        setClientInitialized(true);
+    }, []);
 
-    // Avoid rendering server-only content on the client-side
     if (!clientInitialized) {
-        return null
+        return null;
     }
+
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+        if (publicKey) {
+            await addTodo(event);
+        } else {
+            console.error("Wallet not connected. Unable to add todo.");
+        }
+    };
 
     return (
         <div className={styles.container}>
             <div className={styles.actionsContainer}>
+                <WalletMultiButton />
+            </div>
+            <div className={styles.todoInput}>
                 {initialized ? (
-                    <div className={styles.todoInput}>
-                        <div className={`${styles.todoCheckbox} ${styles.checked}`} />
-                        <div className={styles.inputContainer}>
-                            <form onSubmit={addTodo}>
-                                <input value={input} onChange={handleChange} id={styles.inputField} type="text" placeholder='Create a new todo...' />
-                            </form>
-                        </div>
-                        <div className={styles.iconContainer} />
-                    </div>
+                    <>
+                        <h2>Create a new todo</h2> {/* Header for creating todos */}
+                        <form onSubmit={handleSubmit} style={{ width: '100%' }}>
+                            <input
+                                value={input}
+                                onChange={(e) => setInput(e.target.value)}
+                                id={styles.inputField}
+                                type="text"
+                                placeholder='Type your todo here...'
+                            />
+                            <button type="submit" className={styles.button} disabled={transactionPending}>
+                                {transactionPending ? 'Adding...' : 'Add'}
+                            </button>
+                        </form>
+                    </>
                 ) : (
-                    <button type="button" className={styles.button} onClick={initializeUser} disabled={transactionPending}>
-                        Initialize
+                    <button
+                        type="button"
+                        className={styles.button}
+                        onClick={initializeUser}
+                        disabled={transactionPending}
+                    >
+                        {transactionPending ? 'Initializing...' : 'Initialize'}
                     </button>
                 )}
-                <WalletMultiButton />
             </div>
 
             <div className={styles.mainContainer}>
                 <Loading loading={loading}>
-                    <TodoSection title="Tasks" todos={incompleteTodos} action={markTodo} />
-                    <TodoSection title="Completed" todos={completedTodos} action={removeTodo} />
+                    {/* Incomplete Todos */}
+                    <TodoSection
+                        title="Tasks"
+                        todos={todos ? todos.filter(todo => !todo.account.marked) : []}
+                        action={markTodo}
+                        remove={removeTodo}
+                    />
+                    
+                    {/* Completed Todos */}
+                    <TodoSection
+                        title="Completed"
+                        todos={todos ? todos.filter(todo => todo.account.marked) : []}
+                        action={markTodo}
+                        remove={removeTodo}
+                    />
                 </Loading>
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default Home
+export default Home;
