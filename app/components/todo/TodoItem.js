@@ -1,17 +1,16 @@
-import styles from '../../styles/Todo.module.css'
-import { CalendarIcon, TrashIcon } from '@heroicons/react/outline'
+import styles from '../../styles/Todo.module.css';
+import { CalendarDaysIcon, TrashIcon } from '@heroicons/react/24/outline'; // Correct import for CalendarDaysIcon
+import { CalendarIcon } from '@heroicons/react/24/outline'; // Import missing CalendarIcon
 
-const TodoItem = ({ idx, content, marked, dateline, publicKey, action }) => {
+const TodoItem = ({ idx, content, marked, dateline, action, remove }) => {
     const handleMarkTodo = () => {
-        // Only allow unchecked todo to be marked
-        if (marked) return
-
-        action(publicKey, idx)
-    }
+        if (marked) return;
+        action(idx); // Marking/unmarking logic
+    };
 
     const handleRemoveTodo = () => {
-        action(publicKey, idx)
-    }
+        remove(idx); // Call the remove function
+    };
 
     return (
         <li key={idx} className={styles.todoItem}>
@@ -20,16 +19,16 @@ const TodoItem = ({ idx, content, marked, dateline, publicKey, action }) => {
                 <span className="todoText">{content}</span>
                 {dateline && (
                     <div className={styles.todoDateline}>
-                        <CalendarIcon className={styles.calendarIcon} />
+                        <CalendarIcon className={styles.calendarIcon} /> {/* Use correct CalendarIcon */}
                         <span>{dateline}</span>
                     </div>
                 )}
             </div>
             <div className={styles.iconContainer}>
-                <TrashIcon onClick={handleRemoveTodo} className={styles.trashIcon} />
+                <TrashIcon onClick={handleRemoveTodo} className={styles.trashIcon} /> {/* Trigger removal on click */}
             </div>
         </li>
-    )
-}
+    );
+};
 
-export default TodoItem
+export default TodoItem;
